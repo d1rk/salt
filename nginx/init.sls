@@ -1,3 +1,11 @@
+nginx_configtest:
+  module.wait:
+    - name: nginx.configtest
+    - watch:
+      - file: /etc/nginx/nginx.conf
+      - file: /etc/nginx/conf.d
+      - pkg: nginx
+
 nginx:
   pkg:
     - installed
@@ -6,10 +14,10 @@ nginx:
     - enable: true
     - restart: true
     - watch:
-      - file: /etc/nginx/nginx.conf
-      - file: /etc/nginx/sites-available/default
-      - file: /etc/nginx/conf.d/*
       - pkg: nginx
+      - file: /etc/nginx/nginx.conf
+      - file: /etc/nginx/conf.d
+      - module: nginx_configtest
 
 /etc/nginx/nginx.conf:
   file.managed:
@@ -18,9 +26,10 @@ nginx:
     - group: root
     - mode: 640
 
-/etc/nginx/sites-available/default:
-  file.managed:
-    - source: salt://nginx/files/sites-available/default
-    - user: root
-    - group: root
-    - mode: 640
+/etc/nginx/conf.d:
+  file.recurse:
+    - source: salt://nginx/files/conf.d
+
+/etc/nginx/sites-enabled/default:
+  file:
+    - absent
